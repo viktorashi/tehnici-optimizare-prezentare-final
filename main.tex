@@ -4,6 +4,10 @@
 \usepackage[base]{babel}
 \usepackage{lipsum}
 \usepackage{lmodern}
+\usepackage{pgfplots}
+\usepackage{caption}
+\usepackage{tikz}
+\usetikzlibrary{positioning}
 
 % \renewcommand{\sfdefault}{cmss} % Use Computer Modern Sans
 \renewcommand{\sfdefault}{phv} % Use Helvetica
@@ -17,16 +21,108 @@
 	\maketitle
 \end{titleframe}
 
-\section{Long Text}
-
 \begin{frame}{Contents}
-	\textbf{Introduction to Linear Programming} \\
-	\textbf{Mathematical Theory \& Theorems} \\
-	\textbf{Introduction to PuLP} \\
-	\textbf{Case Studies} \\
-	\textbf{Resources \& References} \\
+	% \textbf{Introduction to Linear Programming} \\
+	% \textbf{Mathematical Theory \& Theorems} \\
+	% \textbf{Introduction to PuLP} \\
+	% \textbf{Case Studies} \\
+	% \textbf{Resources \& References} \\
+	\tableofcontents
 \end{frame}
 
-\section{List}
+\section{Theoretical Foundation}
+
+\begin{frame}{Fundamental Theorem of LP}
+	\textbf{Theorem:} If a linear programming (LP) problem is feasible and bounded, then it has an optimal solution.
+\end{frame}
+
+\begin{frame}{Proof of the Theorem}
+	Without loss of generality, we may assume that the LP problem is of the form:
+	\[
+		\begin{aligned}
+			& \min \mathbf{c}^\top \mathbf{x} \\
+			(P) \quad & \text{s.t. } A\mathbf{x} \geq \mathbf{b}
+		\end{aligned}
+	\]
+	where $m$ and $n$ are positive integers,  $A \in \mathbb{R}^{m \times n}, \ \mathbf{b} \in \mathbb{R}^m, \mathbf{c} \in \mathbb{R}^n,$ $ \text{ and }
+	\mathbf{x} =
+	\begin{bmatrix}
+		x_1 \\
+		\vdots \\
+		x_n
+	\end{bmatrix} \text{ is a tuple of variables. }$
+
+\end{frame}
+
+\begin{frame}{Transforming to Standard Form}
+	\quad Any LP problem can be converted to the standard form $(P)$ having the same feasible region and optimal solution set.
+
+	For this, note that:
+
+	\begin{itemize}
+		\item Constraints of the form $\mathbf{a}^\top \mathbf{x} \leq \beta$ become $-\mathbf{a}^\top \mathbf{x} \geq -\beta$
+		\item Constraints of the form  $\mathbf{a}^\top \mathbf{x} = \beta$ become:
+			\[
+    \mathbf{a}^\top \mathbf{x} \geq \beta \quad \text{and} \quad -\mathbf{a}^\top \mathbf{x} \leq -\beta
+			\]
+		\item Maximization problems become minimizations of $-\mathbf{c}^\top \mathbf{x}$
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Auxiliary System}
+	Suppose $(P)$ is feasible. Define an auxiliary system:
+	\[
+		(S) \quad
+		\begin{cases}
+			z - \mathbf{c}^\top \mathbf{x} \geq 0 \\
+			-z + \mathbf{c}^\top \mathbf{x} \geq 0 \\
+			A\mathbf{x} \geq \mathbf{b}
+		\end{cases}
+	\]
+
+	\vspace{0.5em}
+	Solving $(P)$ is equivalent to minimizing $z$ in $(S)$.
+
+	\vspace{0.5em}
+	We eliminate variables $x_1, \dots, x_n$, reducing $(S)$ to a system $(S')$ involving only $z$.
+\end{frame}
+
+\begin{frame}{Boundedness and Optimal Solution}
+	If $(P)$ is bounded, then $(S')$ must include the constraints:
+	\[
+		z \geq \beta_i \text{, where } \beta_i \in \mathbb{R}, \forall  i = 1, \dots, p, \text{ with } p \in \mathbf{N^*}.
+	\]
+	Define $\gamma = \max\{\beta_1, \dots, \beta_p\}$. Then for any solution $x, z$ to $(S)$, $z$ is at least $\gamma$. But we can set $z = \gamma$ and extend it to a solution for $(S)$.
+
+	Hence, we obtain an optimal solution for $(P)$ and $\gamma$ is the optimal value. This completes the proof of the theorem.
+\end{frame}
+
+\begin{frame}{ Multipliers and the Inequality}
+	$\mathbf{Remark:}$ We can construct multipliers to derive the inequality:
+	\[
+		\mathbf{c}^\top \mathbf{x} \geq \gamma
+	\]
+	from the system $A\mathbf{x} \geq \mathbf{b}$.
+
+	There exist real values $\alpha, \beta, y_1^*, \ldots, y_m^* \geq 0$ such that:
+	\[
+		\left[ \alpha \ \beta \ y_1^* \cdots y_m^* \right]
+		\begin{bmatrix}
+			1 & -\mathbf{c}^\top \\
+			-1 & \mathbf{c}^\top \\
+			0 & A
+		\end{bmatrix}
+		\begin{bmatrix}
+			z \\ \mathbf{x}
+		\end{bmatrix}
+		\geq
+		\left[ \alpha \ \beta \ y_1^* \cdots y_m^* \right]
+		\begin{bmatrix}
+			0 \\ 0 \\ \mathbf{b}
+		\end{bmatrix}
+	\]
+\end{frame}
+
+\section{Hand-written examples}
 
 \end{document}

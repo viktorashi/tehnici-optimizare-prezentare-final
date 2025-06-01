@@ -14,3 +14,5 @@ compilat cu
             ],
             "env": {}
 ```
+
+in settings.json din vscode de la [LaTeX Workshop](https://github.com/James-Yu/LaTeX-Workshop)

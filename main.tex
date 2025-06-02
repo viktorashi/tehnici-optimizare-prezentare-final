@@ -33,14 +33,13 @@
 \definecolor{bgcode}{rgb}{0.95,0.95,0.95} % A light gray
 \definecolor{hlline}{rgb}{0.9,0.9,0.9}    % A slightly darker gray for highlighted lines
 
-\title{A Purdue \LaTeX\ Slide Template}
-\subtitle{Made with Beamer}
-\author{A Purdue Student\texorpdfstring{\footnotemark[1]}{}, A Duepur Student\texorpdfstring{\footnotemark[2]}{}}
-\renewcommand{\slidefoot}{\LaTeX\ Template}
+\author{Stan Ioan-Victor, Ioan-Gabriel Spatariu, Ana Sabina Tatar, Mihnea-Gabriel Vasile, Tepfenhart Bertold }
+% Add comment
 
 \begin{document}
 
-\begin{titleframe}{}
+\begin{titleframe}{PuLP with Python}
+	\subtitle{Solving MILP problems using the GLPK solver.}
 	\maketitle
 \end{titleframe}
 
@@ -53,7 +52,7 @@
 	\tableofcontents
 \end{frame}
 
-\section{Theoretical Foundation}
+\section{Theoretical Foundation (Ionut)}
 
 \begin{frame}{Fundamental Theorem of LP}
 	\textbf{Theorem:} If a linear programming (LP) problem is feasible and bounded, then it has an optimal solution.
@@ -120,7 +119,7 @@
 	Hence, we obtain an optimal solution for $(P)$ and $\gamma$ is the optimal value. This completes the proof of the theorem.
 \end{frame}
 
-\section{Hand-written examples}
+\section{Hand-written examples (Ana)}
 
 \begin{titleframe}{Hand-written Examples}
 
@@ -314,7 +313,13 @@
 	\captionof{figure}{Feasible integer points for ILP: Maximize \(3x + 2y\)}
 \end{frame}
 
-\section{Real World Applications}
+\section{Introduction to PuLP and GLPK (Vic)}
+
+\begin{titleframe}{Introduction to PuLP and GLPK}
+	\textbf{PuLP} is a Python library for linear programming that allows you to define LP problems in a natural way. It can be used with various solvers, including GLPK, which is an open-source solver for linear programming problems.
+\end{titleframe}
+
+\section{Real World Applications (Bertold)}
 
 \begin{titleframe}{Real World Applications}
 	\textbf{Case Study: Blending Problem in Pet Food Production}
@@ -536,6 +541,29 @@ print("Total Cost of Ingrediets per can = ", value(prob.objective))
 		\centering
 		\includegraphics[width=340pt]{pics/bertold-rez-2-exec-time.jpeg}
 	\end{figure}
+\end{frame}
+
+\section{A Transportation Problem (Mihnea)}
+
+\begin{frame}
+	\textbf{Problem:} A company has 3 factories and 4 warehouses. Each factory produces a certain amount of goods, and each warehouse has a specific demand. The goal is to minimize transportation costs while meeting the supply and demand constraints.
+
+	\bigskip
+
+	\textbf{Factories:}
+	\begin{itemize}
+		\item Factory A: 100 units
+		\item Factory B: 150 units
+		\item Factory C: 200 units
+	\end{itemize}
+
+	\textbf{Warehouses:}
+	\begin{itemize}
+		\item Warehouse X: 80 units
+		\item Warehouse Y: 120 units
+		\item Warehouse Z: 150 units
+		\item Warehouse W: 100 units
+	\end{itemize}
 \end{frame}
 
 \end{document}

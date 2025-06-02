@@ -316,8 +316,117 @@
 \section{Introduction to PuLP and GLPK (Vic)}
 
 \begin{titleframe}{Introduction to PuLP and GLPK}
-	\textbf{PuLP} is a Python library for linear programming that allows you to define LP problems in a natural way. It can be used with various solvers, including GLPK, which is an open-source solver for linear programming problems.
+	\textbf{PuLP} is a Python modeler for mixed-integer linear programming (MILP) problems. It is used to first phrase the question and it produces LP and MPS files from your problem statement. Then a solver like \textbf{GLPK} comes in and actually solves the problem.
 \end{titleframe}
+
+\begin{frame}[fragile]{Intro}
+
+	While I admit this is taken straight from the documentation, I can't think of anything better as of now.
+	If we want to restrain a variable between $0 \leq x \leq 3$
+	\begin{minted}{python3}
+from pulp import *
+x = LpVariable("x", 0, 3)	
+	\end{minted}
+	but if we want a discrete, binary value:
+\begin{minted}{python3}
+y = LpVariable("y", cat="Binary")
+\end{minted}
+	Generally \textbf{defining} new problems is done with
+\begin{minted}{python3}
+prob = LpProblem("myProblem", LpMinimize)
+\end{minted}
+
+	and adding constraints is as easy as
+\begin{minted}{python3}
+prob += x + y <= 2
+\end{minted}
+
+\end{frame}
+
+\begin{frame}[fragile]{Solvers}
+	\textbf{ Solving } problems is done with a quick	
+\begin{minted}{python3}
+status = prob.solve()
+\end{minted}
+	To just us the included, built-in solver, namely \verb|CBC| (About
+	COIN-OR Branch-and-Cut)
+	But one can also specify
+\begin{minted}{python3}
+status = prob.solve(GLPK(msg = 0))
+\end{minted}
+	specifically, and getting the values for our solved variables:
+\begin{minted}{python3}
+value(y)
+>3.0
+value(x)
+>3.0
+\end{minted}
+	But that's of course granted if \verb|LpStatus[status]| is 'Optimal' out of the possible \verb|“Undefined”, “Unbounded”, “Infeasible”, “Not Solved”|
+\end{frame}
+
+\begin{frame}[fragile]{Independently solving}
+	We can also, as mentioned previously prompt	PuLP to write the problem to an external \verb|.lp| file, so for a problem of the type
+	\begin{minted}{python3}
+from pulp import *
+
+prob = LpProblem("SimpleProblem", LpMinimize)
+
+# Define variables
+x = LpVariable("x", lowBound=0)
+y = LpVariable("y", lowBound=0)
+
+# Obj function
+prob += 3 * x + 2 * y, "TotalCost"
+
+# Constraints
+prob += 2 * x + y >= 8
+prob += x + 2 * y >= 6
+
+prob.writeLP("simple_problem.lp")	
+	\end{minted}
+	"\verb|simple_problem.lp|" would contain:
+\end{frame}
+
+\begin{frame}[fragile]{simpleproblem.lp}
+	\begin{minted}{texcomments}
+Minimize
+  TotalCost: 3 x + 2 y
+Subject To
+  Constraint1: 2 x + y >= 8
+  Constraint2: x + 2 y >= 6
+Bounds
+  x >= 0
+  y >= 0
+End	
+	\end{minted}
+	Then we can call \textbf{GLPK independently}
+	\begin{minted}{showspaces}
+glpsol --lp simple_problem.lp -o output.sol	
+	\end{minted}
+	Whose output would be:
+\end{frame}
+
+\begin{frame}[fragile]{output.sol}
+\begin{minted}{texcomments}
+Problem:    simple_problem
+Rows:       3
+Columns:    2
+Non-zeros:  4
+Status:     OPTIMAL
+Objective:  TotalCost = 9.6 (MINimum)
+
+   No.   Row name        Activity     Lower bound   Upper bound
+------ ------------    ------------- ------------- -------------
+     1 Constraint1               8.0             8
+     2 Constraint2               6.0             6
+     3 TotalCost                 9.6
+
+   No. Column name      Activity     Lower bound   Upper bound
+------ ------------    ------------- ------------- -------------
+     1 x                        2.8             0
+     2 y                        1.6             0	
+\end{minted}	
+\end{frame}
 
 \section{Real World Applications (Bertold)}
 
@@ -632,7 +741,7 @@ LpVariable.dicts("Route", (Warehouses, Bars), 0, None, LpInteger)
 		prob += lpSum([vars[w][b] for b in Bars]) <= supply[w] # Supply constraints
 		prob += lpSum([vars[w][b] for w in Warehouses]) >= demand[b], f"Demand_{b}" # Demand constraints
 	\end{minted}
-	The problem is then solved using \verb|prob.solve()|.
+	The problem is then solved using prob.solve().
 \end{frame}
 
 %-----------------------------------------------------------------------------------------

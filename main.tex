@@ -545,24 +545,123 @@ print("Total Cost of Ingrediets per can = ", value(prob.objective))
 
 \section{A Transportation Problem (Mihnea)}
 
-\begin{frame}
-	\textbf{Problem:} A company has 3 factories and 4 warehouses. Each factory produces a certain amount of goods, and each warehouse has a specific demand. The goal is to minimize transportation costs while meeting the supply and demand constraints.
+\begin{titleframe}{Case Study: A Transportation Problem}
 
-	\bigskip
+\end{titleframe}
 
-	\textbf{Factories:}
+\begin{frame}{A Transportation Problem: Introduction}
+	\textbf{Scenario:} A boutique brewery distributes beer from its warehouses to several bars.
 	\begin{itemize}
-		\item Factory A: 100 units
-		\item Factory B: 150 units
-		\item Factory C: 200 units
+		\item The brewery has two warehouses (A and B) and serves five bars (1, 2, 3, 4, 5).
+		\item Each week, bars submit orders for a specific number of beer crates.
+		\item \textbf{Objective:} Determine the optimal shipment plan from warehouses to bars to minimize total transportation costs for the entire operation.
+		\item \textbf{Example Data for a Week:}
+			\begin{itemize}
+				\item Warehouse A supply: 1000 cases
+				\item Warehouse B supply: 4000 cases
+				\item Bar demands: 500 (Bar 1), 900 (Bar 2), 1800 (Bar 3), 200 (Bar 4), 700 (Bar 5) cases.
+			\end{itemize}
+	\end{itemize}
+\end{frame}
+
+%-----------------------------------------------------------------------------------------
+
+\begin{frame}{Problem Formulation}
+	\textbf{Decision Variables:}
+	\begin{itemize}
+		\item Let $x(w,b)$ be the number of crates of beer to ship from warehouse $w$ to bar $b$.
+		\item These variables must be non-negative integers ($x(w,b) \ge 0$).
 	\end{itemize}
 
-	\textbf{Warehouses:}
+	\textbf{Objective Function:} Minimize total transportation costs.
 	\begin{itemize}
-		\item Warehouse X: 80 units
-		\item Warehouse Y: 120 units
-		\item Warehouse Z: 150 units
-		\item Warehouse W: 100 units
+		\item Assume a fixed cost per crate for each warehouse-to-bar route.
+		\item Example Costs (\$/crate):
+			\tiny
+			\begin{center}
+				\begin{tabular}{lccccc}
+					\toprule
+					From Warehouse & Bar 1 & Bar 2 & Bar 3 & Bar 4 & Bar 5 \\
+					\midrule
+					A & 2 & 4 & 5 & 2 & 1 \\
+					B & 3 & 1 & 3 & 2 & 3 \\
+					\bottomrule
+				\end{tabular}
+			\end{center}
+			\normalsize
+		\item Minimize: $\sum_{w \in \text{Warehouses}} \sum_{b \in \text{Bars}} \text{cost}(w,b) \cdot x(w,b)$
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Constraints}
+	\begin{itemize}
+		\item \textbf{Supply Constraints:} The total beer shipped from each warehouse cannot exceed its supply.
+			\begin{itemize}
+				\item E.g., For Warehouse A: $\sum_{b \in \text{Bars}} x(A,b) \leq 1000$
+			\end{itemize}
+		\item \textbf{Demand Constraints:} The total beer received by each bar must be at least its demand.
+			\begin{itemize}
+				\item E.g., For Bar 1: $\sum_{w \in \text{Warehouses}} x(w,1) \geq 500$
+			\end{itemize}
+	\end{itemize}
+\end{frame}
+
+%-----------------------------------------------------------------------------------------
+
+\begin{frame}[fragile]{PuLP Model Highlights}
+	\textbf{1. Define Nodes and Data Structures:}
+\begin{minted}{python3}
+Warehouses = ["A", "B"]
+Bars = ["1", "2", "3", "4", "5"]
+supply = {"A": 1000, "B": 4000}
+demand = {"1": 500, "2": 900, "3": 1800, "4": 200, "5": 700}
+costs = makeDict([Warehouses, Bars], cost_data, 0)	#cost matrix, converted to PulP dictionary
+\end{minted}
+
+	\textbf{2. Create Problem and Variables:}
+	\begin{minted}{python3}
+prob = LpProblem("Beer Distribution", LpMinimize)
+vars =
+LpVariable.dicts("Route", (Warehouses, Bars), 0, None, LpInteger)
+	\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]{3. Add Objective Function and Constraints}
+	\begin{minted}{python3}
+		prob += lpSum([vars[w][b] * costs[w][b] for (w,b) in Routes]), "Total Cost"#Objective function
+		prob += lpSum([vars[w][b] for b in Bars]) <= supply[w] # Supply constraints
+		prob += lpSum([vars[w][b] for w in Warehouses]) >= demand[b], f"Demand_{b}" # Demand constraints
+	\end{minted}
+	The problem is then solved using \verb|prob.solve()|.
+\end{frame}
+
+%-----------------------------------------------------------------------------------------
+
+\begin{frame}{Extensions and Solution Insights}
+	\textbf{Balancing the Problem:}
+	\begin{itemize}
+		\item Transportation problems are often "balanced" (total supply = total demand).
+		\item \textbf{Excess Supply:} If supply > demand (like in the example: 5000 cases supply vs 4100 demand ), a "dummy demand node" can be added.
+			\begin{itemize}
+				\item The "cost" of shipping to this dummy node represents storage costs (can be zero if not applicable).
+				\item Demand for the dummy node = Total Supply - Total Real Demand (e.g., 900 cases).
+			\end{itemize}
+		\item \textbf{Excess Demand:} If demand > supply, a "dummy supply node" can balance the problem.
+			\begin{itemize}
+				\item This is crucial because an unbalanced problem with excess demand is infeasible.
+				\item The "cost" from the dummy supply can represent penalties for unmet demand or cost of acquiring from alternative sources.
+			\end{itemize}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Nature of Solution}
+	\begin{itemize}
+		\item If supply and demand values are integers, the LP solution to the transportation problem will inherently be integer values.  (Though variables are often explicitly defined as `LpInteger` in PuLP for clarity/mixed-integer problems).
+	\end{itemize}
+
+	\textbf{Presenting the Solution:}
+	\begin{itemize}
+		\item Typically includes a list of non-zero shipments, total cost, and a management summary.
 	\end{itemize}
 \end{frame}
 

@@ -7,12 +7,31 @@
 \usepackage{pgfplots}
 \usepackage{caption}
 \usepackage{tikz}
+\usepackage{booktabs, makecell}
+\usepackage{minted}
 \usetikzlibrary{positioning}
 
-% For non-CS Purdue logo use the lines below:
-% \renewcommand{\titlelogo}{\includesvg[width=.3\paperwidth,keepaspectratio]{logo/pu-rev.svg}}
-% \renewcommand{\slidelogo}{\includesvg[width=.3\paperwidth,keepaspectratio]{logo/pu.svg}}
-% You can also request a logo from https://marcom.purdue.edu/toolbox/logos/
+\usepackage{xcolor} % for colors
+
+% --- Minted Configuration for Beamer ---
+% This setup helps fit code onto slides and makes it readable.
+\setminted{
+	fontsize=\tiny, % Or \small, \scriptsize depending on your needs
+	baselinestretch=1.1,   % Adjust line spacing
+	breaklines=true,       % Crucial for long lines on slides
+	breakafter=-_,          % Allow breaks after hyphens and underscores
+	frame=lines,           % Adds a light frame around the code
+	framesep=2mm,          % Padding around the frame
+	bgcolor=bgcode,        % Background color for the code block
+	highlightcolor=hlline, % Color for highlighted lines (if using highlightlines)
+	linenos=false,         % Set to true for line numbers
+	tabsize=4,
+	gobble=0               % Removes leading whitespace (e.g. if code is indented in .tex)
+}
+
+% Define custom colors for minted background (optional, but nice for slides)
+\definecolor{bgcode}{rgb}{0.95,0.95,0.95} % A light gray
+\definecolor{hlline}{rgb}{0.9,0.9,0.9}    % A slightly darker gray for highlighted lines
 
 \title{A Purdue \LaTeX\ Slide Template}
 \subtitle{Made with Beamer}
@@ -293,6 +312,230 @@
 		\node at (1.6,3.3) {\scriptsize \textbf{(1,3) Optimal}};
 	\end{tikzpicture}
 	\captionof{figure}{Feasible integer points for ILP: Maximize \(3x + 2y\)}
+\end{frame}
+
+\section{Real World Applications}
+
+\begin{titleframe}{Real World Applications}
+	\textbf{Case Study: Blending Problem in Pet Food Production}
+\end{titleframe}
+
+\begin{frame}{(MILP) Blending Problem: Whiskas Cat Food}
+	So, as a first MILP problem, we've
+	got a blending problem —
+	basically, we want to make
+	Whiskas cat food as cheap as
+	possible while still hitting the
+	nutrition targets on the label. We
+	can play around with how much
+	chicken, beef, mutton, rice, wheat,
+	and gel to use to make that
+	happen.
+
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.4\textwidth]{pics/whiskas_blend_intro.jpg}
+		\caption{Whiskas Cat Food}
+	\end{figure}
+\end{frame}
+
+\begin{frame}{Blending Problem: Whiskas Cat Food}
+	\textbf{Objective:} Minimize cost while meeting nutritional requirements.
+
+	\bigskip
+
+	\textbf{Ingredients:} Chicken, Beef, Mutton, Rice, Wheat bran, Gel
+
+	\bigskip
+
+	The costs of the ingredients per gram are as follows:
+	\begin{itemize}
+		\item Chicken: \$0.013
+		\item Beef: \$0.008
+		\item Mutton: \$0.010
+		\item Rice: \$0.002
+		\item Wheat: \$0.005
+		\item Gel: \$0.001
+	\end{itemize}
+
+	For this exercise, we will ignore the vitamin and mineral ingredients, as their costs are likely negligible.
+\end{frame}
+
+\begin{frame}{Nutritional Data (per gram)}
+	\centering
+	\begin{tabular}{lcccc}
+		\toprule
+		Ingredient & Protein & Fat & Fibre & Salt \\
+		\midrule
+		Chicken     & 0.100 & 0.080 & 0.001 & 0.002 \\
+		Beef        & 0.200 & 0.100 & 0.005 & 0.005 \\
+		Mutton      & 0.150 & 0.110 & 0.003 & 0.007 \\
+		Rice        & 0.000 & 0.010 & 0.100 & 0.002 \\
+		Wheat bran  & 0.040 & 0.010 & 0.150 & 0.008 \\
+		Gel         & 0.000 & 0.000 & 0.000 & 0.000 \\
+		\bottomrule
+	\end{tabular}
+\end{frame}
+
+\begin{frame}{Simplified Formulation}
+	\textbf{Variables:}
+	\[
+		x_1 = \% \text{Chicken}, \quad x_2 = \% \text{Beef}
+	\]
+
+	\textbf{Objective:}
+	\[
+		\min\ 0.013x_1 + 0.008x_2
+	\]
+
+	\textbf{Constraints:}
+	\begin{align*}
+		1.0x_1 + 1.0x_2 &= 100 \\
+		0.1x_1 + 0.2x_2 &\ge 8.0 \quad \text{(Protein)} \\
+		0.08x_1 + 0.1x_2 &\ge 6.0 \quad \text{(Fat)} \\
+		0.001x_1 + 0.005x_2 &\le 2.0 \quad \text{(Fibre)} \\
+		0.002x_1 + 0.005x_2 &\le 0.4 \quad \text{(Salt)}
+	\end{align*}
+\end{frame}
+
+\begin{frame}[fragile]{Python Code}
+
+	\begin{minted}{python}
+from pulp import *
+prob = LpProblem("The Whiskas Problem", LpMinimize)
+
+x1 = LpVariable("ChickenPercent", 0, None, LpInteger)
+x2 = LpVariable("BeefPercent", 0)
+
+prob += 0.013 * x1 + 0.008 * x2, "Total Cost of Ingredients per can"
+prob += x1 + x2 == 100, "PercentagesSum"
+
+prob += 0.100 * x1 + 0.200 * x2 >= 8.0, "ProteinRequirement"
+prob += 0.080 * x1 + 0.100 * x2 >= 6.0, "FatRequirement"
+prob += 0.001 * x1 + 0.005 * x2 <= 2.0, "FibreRequirement"
+prob += 0.002 * x1 + 0.005 * x2 <= 0.4, "SaltRequirement"
+
+prob.writeLP("WhiskasModel.lp")
+print("Status:", LpStatus[prob.status])
+
+for v in prob.variables():
+	print(v.name, "=", v.varValue)
+
+print("Total Cost of Ingredients per can = ", value(prob.objective))
+\end{minted}
+
+\end{frame}
+
+\begin{frame}{Solution Results}
+	\textbf{Simplified Model:}
+	\begin{itemize}
+		\item Chicken: 33.33\%
+		\item Beef: 66.67\%
+		\item Cost per can: \$0.96
+	\end{itemize}
+
+	\bigskip
+
+	\textbf{Full Model (All 6 Ingredients):}
+	\begin{itemize}
+		\item Beef: 60\%
+		\item Gel: 40\%
+		\item Cost per can: \$0.52
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Full solution}
+    \begin{minted}{python3}
+from pulp import *
+Ingredients = ["CHICKEN", "BEEF", "MUTTON", "RICE",
+"WHEAT", "GEL"]
+costs = {
+	"CHICKEN": 0.013,
+	"BEEF": 0.008,
+	"MUTTON": 0.010,
+	"RICE": 0.002,
+	"WHEAT": 0.005,
+	"GEL": 0.001,
+}
+proteinPercent = {
+	"CHICKEN": 0.100,
+	"BEEF": 0.200,
+	"MUTTON": 0.150,
+	"RICE": 0.000,
+	"WHEAT": 0.040,
+	"GEL": 0.000,
+}
+    \end{minted}
+\end{frame}
+
+\begin{frame}[fragile,plain]
+	\begin{minted}{python3}
+fatPercent = {
+	"CHICKEN": 0.080,
+	"BEEF": 0.100,
+	"MUTTON": 0.110,
+	"RICE": 0.010,
+	"WHEAT": 0.010,
+	"GEL": 0.000,
+}
+fibrePercent = {
+	"CHICKEN": 0.001,
+	"BEEF": 0.005,
+	"MUTTON": 0.003,
+	"RICE": 0.100,
+	"WHEAT": 0.150,
+	"GEL": 0.000,
+}
+saltPercent = {
+	"CHICKEN": 0.002,
+	"BEEF": 0.005,
+	"MUTTON": 0.007,
+	"RICE": 0.002,
+	"WHEAT": 0.008,
+	"GEL": 0.000,
+}
+	\end{minted}
+\end{frame}
+
+\begin{frame}[fragile,plain]
+	\begin{minted}{python3}
+prob = LpProblem("The Whiskas Problem", LpMinimize)
+ingredient_vars = LpVariable.dicts("Ingr", Ingredients, 0)
+prob += (
+lpSum([costs[i] * ingredient_vars[i] for i in Ingredients]),
+"Total Cost of Ingredients per can",
+)
+prob += lpSum([ingredient_vars[i] for i in Ingredients]) == 100, "PercentagesSum"
+prob += (
+lpSum([proteinPercent[i] * ingredient_vars[i] for i in Ingredients]) >= 8.0,
+"ProteinRequirement",
+)
+prob += (
+lpSum([fatPercent[i] * ingredient_vars[i] for i in Ingredients]) >= 6.0,
+"FatRequirement",
+)
+prob += (
+lpSum([fibrePercent[i] * ingredient_vars[i] for i in Ingredients]) <= 2.0,
+"FibreRequirement",
+)
+prob += (
+lpSum([saltPercent[i] * ingredient_vars[i] for i in Ingredients]) <= 0.4,
+"SaltRequirement",
+)
+prob.writeLP("WhiskasModel2.lp")
+prob.solve()
+print("Status:", LpStatus[prob.status])
+for v in prob.variables():
+print(v.name, "=", v.varValue)
+print("Total Cost of Ingrediets per can = ", value(prob.objective))
+	\end{minted}
+\end{frame}
+
+\begin{frame}{Execution Time of previous code}
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=340pt]{pics/bertold-rez-2-exec-time.jpeg}
+	\end{figure}
 \end{frame}
 
 \end{document}
